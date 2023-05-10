@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% load static %}
+
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Record</title>
+        <!-- Favicon-->
+        <link rel="icon" type="image/x-icon" href="{% static 'FRONTEND/assets/favicon.ico' %}" />
+        <!-- Bootstrap Icons-->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Merriweather+Sans:400,700" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css?family=Merriweather:400,300,300italic,400italic,700,700italic" rel="stylesheet" type="text/css" />
+        <!-- SimpleLightbox plugin CSS-->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/SimpleLightbox/2.1.0/simpleLightbox.min.css" rel="stylesheet" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="{% static 'FRONTEND/css/styles.css' %}" rel="stylesheet" />
+    </head>
+    <body id="page-top">
+        <!-- Navigation-->
+
+        <nav class="navbar navbar-expand-lg navbar-light fixed-top py-3" id="mainNav">
+
+            <div class="container px-4 px-lg-5">
+                <a class="navbar-brand" href="#page-top">NeuraLie</a>
+                <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ms-auto my-2 my-lg-0">
+                        <li class="nav-item"><a class="nav-link" href="\">Home</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Masthead-->
+        <header class="masthead">
+            <div class="container px-4 px-lg-5 h-100">
+                <div class="row gx-4 gx-lg-5 h-100 align-items-center justify-content-center text-center">
+                    <div class="container px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center mb-5">
+                    <div class="col-lg-6">
+                      <p><video id="video" autoplay width="480" height="320" /></p>
+                      <button class="btn btn-primary btn-xl" onclick="startRecording()">Start</button>
+                      <button class="btn btn-primary btn-xl" onclick="stopRecording()">Stop</button>
+                      <form method="post" onsubmit="sendVideoData(event)">
+                        {% csrf_token %}
+                        <input type="hidden" name="video_data" id="video-data" value="">
+                    </form>
+                    </div>
+                </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Footer-->
+        <footer class="bg-light py-5">
+            <div class="container px-4 px-lg-5"><div class="small text-center text-muted">Copyright &copy; 2023 - NeuraLie</div></div>
+        </footer>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- SimpleLightbox plugin JS-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/SimpleLightbox/2.1.0/simpleLightbox.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="{% static 'FRONTEND/js/scripts.js' %}"></script>
+        <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+    </body>
+</html>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+const constraints = { "video": { width: { max: 320 } }, "audio": false };
+
+let theStream;
+let theRecorder;
+let recordedChunks = [];
+let recording = false;
+
+function startRecording() {
+  navigator.mediaDevices.getUserMedia(constraints)
+    .then(gotMedia)
+    .catch(handleError);
+}
+
+function gotMedia(stream) {
+  theStream = stream;
+  const video = document.querySelector('video');
+  video.srcObject = stream;
+  try {
+    if (typeof MediaRecorder.isTypeSupported === 'function' && MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
+      theRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
+    } else {
+      theRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=h264' });
+    }
+  } catch (e) {
+    console.error('Exception while creating MediaRecorder:', e);
+    return;
+  }
+  theRecorder.ondataavailable = handleDataAvailable;
+  theRecorder.start();
+  recording = true;
+}
+
+function handleDataAvailable(event) {
+  if (event.data.size > 0) {
+    recordedChunks.push(event.data);
+  }
+}
+
+function stopRecording() {
+  theRecorder.stop();
+  theStream.getTracks().forEach(track => track.stop());
+  recording = false;
+  upload();
+}
+
+function upload() {
+  var blob = new Blob(recordedChunks, {type: "video/webm"});
+
+  // Create a new XMLHttpRequest object
+  var xhr = new XMLHttpRequest();
+
+  // Define the function to run when the upload is complete
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4 && xhr.status === 200) {
+      console.log(xhr.responseText);
+    }
+  }
+
+  // Open the connection to the server
+  xhr.open("POST", "/upload/", true);
+
+  // Set the X-CSRFToken header with the CSRF token value
+  var csrf_token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+  xhr.setRequestHeader("X-CSRFToken", csrf_token);
+
+  // Create a FormData object and add the video data to it
+  var formData = new FormData();
+  formData.append('video_data', blob, 'video.webm');
+
+  // Send the FormData object to the server
+  xhr.send(formData);
+}
+
+
+function handleError(error) {
+  console.error('getUserMedia() failed:', error);
+  recording = false;
+}
+
+// Add event listeners to start and stop recording
+const startButton = document.getElementById('start');
+const stopButton = document.getElementById('stop');
+
+startButton.addEventListener('click', () => {
+  if (!recording) {
+    startRecording();
+  }
+});
+
+stopButton.addEventListener('click', () => {
+  if (recording) {
+    stopRecording();
+  }
+});
+
+</script>
