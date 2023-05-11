@@ -8,3 +8,12 @@ NeuraLie is an AI-based lie detection solution that utilizes the subject's brain
 
 https://github.com/mshaheeralam/NeuraLie/assets/56303960/d908560f-8338-4fe0-83ad-de529bed9c68
 
+## How to run
+Install dependencies 
+```
+pip install django
+```
+Change directory to folder containing these files then
+```
+python manage.py runserver
+```
