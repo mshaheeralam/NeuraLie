@@ -1,20 +1,88 @@
-# NeuraLie
-An AI based tri-modal approach for deception detection
+# NeuraLie  
+Tri-modal deception detection using EEG, facial expressions, and eye-blink patterns.  
 
-## Abstract
-NeuraLie is an AI-based lie detection solution that utilizes the subject's brain waves (EEG signals) along with other elusive physical cues, namely facial expressions and eye-blinking patterns, to detect deception. This particular approach not only aims to address the limitations and inaccuracies of the conventional polygraph but has also aimed to revolutionize the efficacy of lie detection systems in general. The conventional polygraph test uses only physiological responses making them less effective and unreliable, as has been proved over the years. NeuraLie will make use of an EEG headset and a camera, which will send inputs to the NeuraLie web application running on the computer they are connected to. The procedure will be the same as in current lie detection techniques, involving an examiner/interviewer and a subject being monitored by the hardware. The interviewers can get themselves registered, allowing multiple interviewers to make use of the same machine and have their own logs stored locally for future reference. The data collected from the two hardware interfaces, EEG headset, and camera, are sent for processing on the backend, after which they are given as input to the three Deep Learning models that NeuraLie utilizes. The results are ensembled to reach a conclusive result, which is a binary classification between truth and lies.
+🏆 **Winner – Jury’s Choice Award, Microsoft Imagine Cup 2023 (Pakistan)**  
 
-https://github.com/mshaheeralam/NeuraLie/assets/56303960/d908560f-8338-4fe0-83ad-de529bed9c68
+---
 
-## Demo
-https://github.com/mshaheeralam/NeuraLie/assets/56303960/b0428961-68dc-45e2-805b-517ce32a2dda
+## 🚀 Overview  
+NeuraLie is a multimodal lie detection system that integrates **EEG signals**, **facial expression analysis**, and **eye-blink patterns** to classify truth vs. deception.  
+The system fuses multiple models through ensembling to achieve higher robustness and accuracy compared to unimodal approaches.  
 
-## How to run
-Install dependencies 
+It was developed as part of the **Microsoft Imagine Cup 2023**, where it won the Jury’s Choice Award in Pakistan.  
+
+---
+
+## 🎥 Demo  
+
+- **[Project Overview (Slides)](https://github.com/mshaheeralam/NeuraLie/assets/56303960/d908560f-8338-4fe0-83ad-de529bed9c68)** – High-level presentation explaining NeuraLie’s approach, modalities, and motivation.  
+- **[Live System Demo](https://github.com/mshaheeralam/NeuraLie/assets/56303960/b0428961-68dc-45e2-805b-517ce32a2dda)** – Full walkthrough of NeuraLie in action, showing facial + eye-blink detection working together.  
+
+---
+
+## ✨ Features  
+- **Tri-modal fusion** – EEG brainwave analysis + eye-blink patterns + facial expressions.  
+- **Model ensembling** – Combines outputs from multiple models for reliable classification.  
+- **Research-oriented design** – Built to test real-time multimodal biometrics.  
+- **Web application** – Django-powered interface for interviewer login, data capture, and result storage.  
+
+---
+
+## 🧩 Architecture  
+
+```text
+EEG Headset  ─┐
+               ├─> Signal Processing ─┐
+Camera       ──┘                      ├─> Deep Models (EEG / Face / Blink) ──> Ensemble ──> Truth/Lie
+Django Web App (UI + control + local logging)
 ```
-pip install django
+
+---
+
+## 🛠️ Tech Stack  
+- **Languages**: Python  
+- **Frameworks**: Django, OpenCV, scikit-learn, TensorFlow/PyTorch  
+- **Modalities**: EEG signals, blink detection, facial expression recognition  
+- **Deployment**: Local machine (single-user web app)  
+
+---
+
+## ⚡ Quickstart  
+
+1. Clone the repository:  
+```bash
+git clone https://github.com/mshaheeralam/neuralie.git
+cd neuralie
 ```
-Change directory to folder containing these files then
+
+2. Install dependencies:  
+```bash
+pip install -r requirements.txt
 ```
+
+3. Run the Django app:  
+```bash
 python manage.py runserver
 ```
+
+> Note: Pretrained models and EEG data are not included due to size and privacy. Instructions are provided in the repo to plug in your own data/models.  
+
+---
+
+## 📂 Suggested Repository Structure  
+```
+neuralie/
+  ├─ app/                 # Django app (views, urls, templates)
+  ├─ models/              # Trained models / weights (gitignored if large)
+  ├─ processing/          # EEG/vision preprocessing + feature extraction
+  ├─ data/                # Sample inputs (gitignored)
+  ├─ README.md
+  └─ manage.py
+```
+
+---
+
+## 🔮 Roadmap / Future Work  
+- Expand dataset with additional subjects.  
+- Containerize for reproducible deployments (Docker/Kubernetes).  
+- Add inference API for external integrations.  
