@@ -1,0 +1,11 @@
+# Built in 2023 with Python 3.9. Versions are the ones the saved models and
+# Django project were created with; newer versions may need small changes.
+Django>=4.1,<4.2
+tensorflow==2.11.*      # provides Keras 2.11, used by the facial-expression GRU model
+numpy
+scipy
+opencv-python
+dlib                    # facial landmarks for blink detection (needs CMake to build)
+imutils
+joblib
+scikit-learn            # likely needed to load the saved blink model (joblib pickle)

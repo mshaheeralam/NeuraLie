@@ -1,0 +1,4 @@
+# Count the project as Python on GitHub: the bundled front-end template
+# assets otherwise make the repository show up as CSS.
+FRONTEND/static/** linguist-vendored
+*.html linguist-detectable=false

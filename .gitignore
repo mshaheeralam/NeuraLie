@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Django
+db.sqlite3
+.env
+
+# Recorded interview videos and datasets: never commit
+Data/
+*.mp4
+*.avi
+*.mov

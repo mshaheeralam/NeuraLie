@@ -1,88 +1,65 @@
-# NeuraLie  
-Tri-modal deception detection using EEG, facial expressions, and eye-blink patterns.  
+# NeuraLie
 
-🏆 **Winner – Jury’s Choice Award, Microsoft Imagine Cup 2023 (Pakistan)**  
+Deception detection from video: a Django web app that records an interview and classifies each answer as truth or lie from the subject's **facial expressions** and **eye-blink patterns**.
 
----
+🏆 **Jury's Choice Award, Microsoft Imagine Cup 2023 (Pakistan)**
 
-## 🚀 Overview  
-NeuraLie is a multimodal lie detection system that integrates **EEG signals**, **facial expression analysis**, and **eye-blink patterns** to classify truth vs. deception.  
-The system fuses multiple models through ensembling to achieve higher robustness and accuracy compared to unimodal approaches.  
-
-It was developed as part of the **Microsoft Imagine Cup 2023**, where it won the Jury’s Choice Award in Pakistan.  
+NeuraLie was our final-year project in BS Computer Science at the Ghulam Ishaq Khan Institute (GIKI), built by a team of four:
+Muhammad Maaz Tariq, Shaheer Alam, Mohammad Arslan and Muhammad Afzal, supervised by Dr. Zahid Halim. The full report is in [`Thesis.pdf`](Thesis.pdf).
 
 ---
 
-## 🎥 Demo  
+## How it works
 
-- **[Project Overview (Slides)](https://github.com/mshaheeralam/NeuraLie/assets/56303960/d908560f-8338-4fe0-83ad-de529bed9c68)** – High-level presentation explaining NeuraLie’s approach, modalities, and motivation.  
-- **[Live System Demo](https://github.com/mshaheeralam/NeuraLie/assets/56303960/b0428961-68dc-45e2-805b-517ce32a2dda)** – Full walkthrough of NeuraLie in action, showing facial + eye-blink detection working together.  
-
----
-
-## ✨ Features  
-- **Tri-modal fusion** – EEG brainwave analysis + eye-blink patterns + facial expressions.  
-- **Model ensembling** – Combines outputs from multiple models for reliable classification.  
-- **Research-oriented design** – Built to test real-time multimodal biometrics.  
-- **Web application** – Django-powered interface for interviewer login, data capture, and result storage.  
-
----
-
-## 🧩 Architecture  
+Deception shows up as *changes* over time, not in a single frame. So the system looks at the whole recorded answer, not one image.
 
 ```text
-EEG Headset  ─┐
-               ├─> Signal Processing ─┐
-Camera       ──┘                      ├─> Deep Models (EEG / Face / Blink) ──> Ensemble ──> Truth/Lie
-Django Web App (UI + control + local logging)
+Recorded answer (video)
+   │
+   ├─> Face per frame ─> pretrained emotion CNN (fer.h5) ─> 2,048 features per frame
+   │                                                          └─> GRU model ─> P(truth)
+   │
+   └─> Facial landmarks (dlib) ─> blink count and rate ─> blink classifier ─> P(lie)
+                                                                  │
+                                         simple threshold rule ─> final verdict
 ```
 
----
+- **Facial expressions** (`BACKEND/Modality2_FacialExpressions`): up to 600 frames per answer. Each face goes through a pretrained 7-emotion CNN, used as a feature extractor. A Keras model (Conv1D + two GRU layers) reads the 600 × 2,048 sequence and outputs truth or lie.
+- **Eye blinks** (`BACKEND/Modality1_EyeBlink`): dlib facial landmarks detect blinks across the video. A trained classifier (`my_blink_model.pkl`) predicts truth or lie from the blink statistics.
+- **Final verdict**: a threshold rule combines the two probabilities (see `demo` in `FRONTEND/views.py`).
+- **Web app** (`FRONTEND`, `Neuralie`): Django. Interviewers register and log in, record answers, and see results and logs stored locally.
 
-## 🛠️ Tech Stack  
-- **Languages**: Python  
-- **Frameworks**: Django, OpenCV, scikit-learn, TensorFlow/PyTorch  
-- **Modalities**: EEG signals, blink detection, facial expression recognition  
-- **Deployment**: Local machine (single-user web app)  
+### What about EEG?
+The original design was **tri-modal** and added EEG brainwave signals (see the thesis). Our EEG headset failed during the project and a replacement could not be sourced in time, so with our supervisor's approval the final system uses two modalities. `BACKEND/Modality3_EEG` is an empty placeholder from that plan.
 
----
+## Dataset
 
-## ⚡ Quickstart  
+We built our own dataset by filming students on campus answering questions truthfully and deceptively. **The videos are not included in this repository** to protect the participants' privacy.
 
-1. Clone the repository:  
-```bash
-git clone https://github.com/mshaheeralam/neuralie.git
-cd neuralie
-```
+The demo page reads videos from a local `Data/` folder (ignored by Git). To try it, add your own recordings there, named `trial_lie_<n>.mp4` or `trial_truth_<n>.mp4`.
 
-2. Install dependencies:  
+## Running it locally
+
+Built in 2023 with Python 3.9. Install dependencies and start the Django server:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Run the Django app:  
+```bash
+python manage.py migrate
+```
+
 ```bash
 python manage.py runserver
 ```
 
-> Note: Pretrained models and EEG data are not included due to size and privacy. Instructions are provided in the repo to plug in your own data/models.  
+The trained models are included in `BACKEND/`. Settings read `DJANGO_SECRET_KEY` and `DJANGO_DEBUG` from the environment; the defaults are for local development only.
 
----
+## Tech stack
 
-## 📂 Suggested Repository Structure  
-```
-neuralie/
-  ├─ app/                 # Django app (views, urls, templates)
-  ├─ models/              # Trained models / weights (gitignored if large)
-  ├─ processing/          # EEG/vision preprocessing + feature extraction
-  ├─ data/                # Sample inputs (gitignored)
-  ├─ README.md
-  └─ manage.py
-```
+Python · Django · TensorFlow / Keras (CNN, GRU) · OpenCV · dlib · NumPy · SciPy
 
----
+## License
 
-## 🔮 Roadmap / Future Work  
-- Expand dataset with additional subjects.  
-- Containerize for reproducible deployments (Docker/Kubernetes).  
-- Add inference API for external integrations.  
+See [LICENSE](LICENSE).
